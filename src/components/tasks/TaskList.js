@@ -8,12 +8,17 @@ const TaskList = () => {
   const [filteredTasks, setFilteredTasks] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
-  const [sortBy, setSortBy] = useState("dueDate");
+  const [sortBy, setSortBy] = useState("none");
   const [editingTask, setEditingTask] = useState(null);
   const [showForm, setShowForm] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [draggedIndex, setDraggedIndex] = useState(null);
   const { logout, user } = useAuth();
+
+  useEffect(() => {
+    if (user?.role === "user") {
+      setSortBy("dueDate");
+    }
+  }, [user?.role]);
   const generateRandomDate = () => {
     const today = new Date();
     const future = new Date(today.getTime() + Math.random() * 30 * 24 * 60 * 60 * 1000);
@@ -56,6 +61,7 @@ const TaskList = () => {
     } else if (sortBy === "status") {
       filtered.sort((a, b) => a.status.localeCompare(b.status));
     }
+
     setFilteredTasks(filtered);
   }, [tasks, searchTerm, statusFilter, sortBy]);
   useEffect(() => {
@@ -86,34 +92,40 @@ const TaskList = () => {
     }
     setTasks(tasks.filter((task) => task.id !== taskId));
   };
-  // Drag and Drop handlers
+
   const handleDragStart = (e, index) => {
-    setDraggedIndex(index);
     e.dataTransfer.effectAllowed = "move";
+    e.dataTransfer.setData("text/plain", index);
   };
+
   const handleDragOver = (e, index) => {
     e.preventDefault();
-    if (draggedIndex === null || draggedIndex === index) return;
-    const newTasks = [...filteredTasks];
-    const [movedTask] = newTasks.splice(draggedIndex, 1);
-    newTasks.splice(index, 0, movedTask);
-    setFilteredTasks(newTasks);
-    setDraggedIndex(index);
+    e.dataTransfer.dropEffect = "move";
   };
-  const handleDrop = (e, index) => {
-    e.preventDefault();
-    setDraggedIndex(null);
-    // Update the main tasks array with new order
-    const reorderedTasks = [...tasks];
 
-    // Update positions for filtered tasks
-    filteredTasks.forEach((task) => {
-      const mainIndex = reorderedTasks.findIndex((t) => t.id === task.id);
-      if (mainIndex !== -1) {
-        reorderedTasks[mainIndex] = task;
-      }
-    });
-    setTasks(reorderedTasks);
+  const handleDrop = (e, dropIndex) => {
+    e.preventDefault();
+
+    const dragIndex = parseInt(e.dataTransfer.getData("text/plain"), 10);
+    if (dragIndex === dropIndex) return;
+
+    // Create new arrays to avoid direct state mutation
+    const newFilteredTasks = [...filteredTasks];
+
+    // Get the task being dragged
+    const [movedTask] = newFilteredTasks.splice(dragIndex, 1);
+
+    // Insert it at the new position
+    newFilteredTasks.splice(dropIndex, 0, movedTask);
+
+    // Update the filtered tasks for immediate UI update
+    setFilteredTasks(newFilteredTasks);
+
+    // Update the main tasks array to maintain the new order
+    const updatedTasks = newFilteredTasks.map((filteredTask) => tasks.find((task) => task.id === filteredTask.id)).filter(Boolean);
+
+    setTasks(updatedTasks);
+    // setDraggedIndex(null);
   };
   if (loading) {
     return (
@@ -191,12 +203,13 @@ const TaskList = () => {
                 </select>
               </div>
               <div className="flex items-center">
-                <span className="mr-2 text-sm text-gray-600 w-max">Sort by:</span>
+                <span className="mr-2 text-sm text-gray-600">Sort by:</span>
                 <select
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value)}
                   className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
                 >
+                  {user?.role === "admin" && <option value="none">None (Drag to reorder)</option>}
                   <option value="dueDate">Due Date</option>
                   <option value="title">Title</option>
                   <option value="status">Status</option>
