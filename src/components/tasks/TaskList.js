@@ -109,23 +109,16 @@ const TaskList = () => {
     const dragIndex = parseInt(e.dataTransfer.getData("text/plain"), 10);
     if (dragIndex === dropIndex) return;
 
-    // Create new arrays to avoid direct state mutation
     const newFilteredTasks = [...filteredTasks];
-
-    // Get the task being dragged
     const [movedTask] = newFilteredTasks.splice(dragIndex, 1);
 
-    // Insert it at the new position
     newFilteredTasks.splice(dropIndex, 0, movedTask);
 
-    // Update the filtered tasks for immediate UI update
     setFilteredTasks(newFilteredTasks);
 
-    // Update the main tasks array to maintain the new order
     const updatedTasks = newFilteredTasks.map((filteredTask) => tasks.find((task) => task.id === filteredTask.id)).filter(Boolean);
 
     setTasks(updatedTasks);
-    // setDraggedIndex(null);
   };
   if (loading) {
     return (
@@ -153,7 +146,6 @@ const TaskList = () => {
   }
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
       <header className="bg-white shadow">
         <div className="max-w-7xl mx-auto px-4 py-4 sm:px-6 lg:px-8 flex justify-between items-center">
           <h1 className="text-2xl font-bold text-gray-900">Task Manager</h1>
@@ -169,9 +161,8 @@ const TaskList = () => {
           </div>
         </div>
       </header>
-      {/* Main Content */}
+
       <main className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
-        {/* Filters and Actions */}
         <div className="mb-6 bg-white p-4 rounded-lg shadow">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div className="flex-1">
@@ -227,7 +218,7 @@ const TaskList = () => {
             </div>
           </div>
         </div>
-        {/* Task Grid */}
+
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredTasks.length > 0 ? (
             filteredTasks.map((task, index) => (

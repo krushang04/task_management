@@ -16,6 +16,4 @@ describe("Authentication Service", () => {
       expect(response.success).toBe(true);
     });
   });
-
-  // Add more tests...
 });

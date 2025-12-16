@@ -4,7 +4,6 @@ import Login from "./components/auth/Login";
 import TaskList from "./components/tasks/TaskList";
 import { useAuth } from "./context/AuthContext";
 
-// Main App Component
 const App = () => {
   const { user, loading } = useAuth();
 
@@ -19,7 +18,6 @@ const App = () => {
   return <div className="App">{user ? <TaskList /> : <Login />}</div>;
 };
 
-// Root Component with Provider
 const RootApp = () => {
   return (
     <AuthProvider>

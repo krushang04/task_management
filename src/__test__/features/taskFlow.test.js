@@ -7,14 +7,12 @@ describe("Task Management Flow Integration", () => {
       wrapper: AuthProvider,
     });
 
-    // Login
     await act(async () => {
       await result.current.login("admin", "admin123", "admin");
     });
 
     expect(result.current.user).toBeTruthy();
 
-    // Create task
     const tasks = [];
     const newTask = {
       id: Date.now(),
